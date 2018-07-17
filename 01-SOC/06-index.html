@@ -37,11 +37,11 @@
 			};
 
 			var _listeners = {
-				basic : null,
-				hra : null,
-				da : null,
-				tax : null,
-				salary : null
+				basic : [],
+				hra : [],
+				da : [],
+				tax : [],
+				salary : []
 			}
 
 			this.get = function(attrName){
@@ -51,13 +51,18 @@
 			this.set = function(attrName, value){
 				if (_data[attrName] === value) return;
 				_data[attrName] = value;
-				var listenerFn = _listeners[attrName];
-				if (typeof listenerFn === 'function')
-					listenerFn();
+				triggerChange(attrName);
 			};
+			function triggerChange(attrName){
+				var listenerFns = _listeners[attrName];
+				listenerFns.forEach(function(listenerFn){
+					if (typeof listenerFn === 'function')
+						listenerFn();	
+				})
+			}
 
 			this.subscribe = function(attrName, listenerFn){
-				_listeners[attrName] = listenerFn;
+				_listeners[attrName].push(listenerFn);
 			}
 		}
 		//behavior
@@ -72,6 +77,9 @@
 		$(function(){
 
 			window.model = new SalaryCalculatorModel();
+
+
+			//Reacting to user actions
 
 			$('#txtBasic').change(function(){
 				model.set('basic', $('#txtBasic').val().toInt());
@@ -89,13 +97,12 @@
 				model.set('tax', $('#rangeTax').val().toInt());
 			});
 
-
 			$('#btnCalculate').click(function(){
 				model.calculate();
 			});
 
-			
 
+			//Reacting to Model changes
 			model.subscribe('salary', function(){
 				$('#tdSalary').html(model.get('salary'));
 			});
