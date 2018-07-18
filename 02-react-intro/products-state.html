@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Greeter</title>
+	<script src="react.js"></script>
+	<script src="react-dom.js"></script>
+	<script src="babel.min.js"></script>
+	<script type="text/babel">
+		
+		class ProductList extends React.Component{
+			state = { products : [] };
+			newProductName = '';
+
+			onAddClick = () => {
+				let {products} = this.state;
+				let newProductId = products.reduce((result, product) => result > product.id ? result : product.id, 0) + 1;
+				let newProduct = {
+					id : newProductId,
+					name : this.newProductName
+				};
+				this.state.products.push(newProduct);
+				this.setState({products : this.state.products});
+			}
+
+			render(){
+				let productItems = this.state.products.map(product => (<li key={product.id}>{product.name}</li>));
+				return(
+					<div>
+						<h1>Products</h1>
+						<hr/>
+						<label>Product Name :</label>
+						<input type="text" onChange={(evt) => this.newProductName = evt.target.value} />
+						<input type="button" value="Add" onClick={this.onAddClick}/>
+						<ol>
+							{productItems}
+						</ol>
+					</div>
+				)
+			}
+		}
+
+		class ProductCount extends React.Component{
+			render(){
+				return(
+					<div>
+						<span>Products Count : </span>
+						<span>{this.props.count}</span>
+					</div>
+				)
+			}
+		}
+
+		ReactDOM.render(
+			<div>
+				<ProductCount count="0" />
+				<ProductList />
+			</div>,
+			document.getElementById('root'));
+
+	</script>
+</head>
+<body>
+	<div id="root"></div>
+</body>
+</html>
