@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>State Manager</title>
+	<script src="redux.js"></script>
+	<script src="react.js"></script>
+	<script src="react-dom.js"></script>
+	<script src="babel.min.js"></script>
+	<script type="text/babel">
+		function spinnerReducer(currentState = 0, action){
+			if (action.type === 'INCREMENT')
+				return currentState + action.payload;
+			if (action.type === 'DECREMENT')
+				return currentState - action.payload;
+			return currentState;
+		}
+		var store = Redux.createStore(spinnerReducer);
+
+		var spinnerActionCreators = {
+			increment(delta){
+				let action = { type : 'INCREMENT' , payload : delta};
+				return action;
+			},
+			decrement(delta){
+				let action = { type : 'DECREMENT' , payload : delta};
+				return action;
+			}
+		}
+
+		let spinnerActions = Redux.bindActionCreators(spinnerActionCreators, store.dispatch);
+
+		class Spinner extends React.Component{
+			deltaValue = 1;
+			onDecrementClick = () => {
+				this.props.decrement(this.deltaValue);
+			}
+			onIncrementClick = () => {
+				this.props.increment(this.deltaValue);
+			}
+			render(){
+				return (
+					<div>
+						<input type="number" onChange={evt => this.deltaValue = evt.target.valueAsNumber}/>
+						<br/>
+						<input type="button" value="Decrement" onClick={this.onDecrementClick}/>
+						<span> [{this.props.value}] </span>
+						<input type="button" value="Increment" onClick={this.onIncrementClick}/>
+					</div>
+				);
+			}
+		}
+		 
+		
+
+		function renderApp(){
+			let spinnerValue = store.getState();
+			ReactDOM.render(<Spinner value={spinnerValue}  {...spinnerActions}/>,
+				document.getElementById('root'));	
+		}
+		renderApp();
+		store.subscribe(renderApp);
+		
+	</script>
+</head>
+<body>
+	<div id="root"></div>
+</body>
+</html>
