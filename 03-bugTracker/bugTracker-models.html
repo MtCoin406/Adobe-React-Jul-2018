@@ -82,6 +82,21 @@
 				return [...this._list];
 			}
 		}
+
+		class BugItem extends React.Component{
+			onBugNameClick = () => {
+				console.log('The bug is being toggled', this.props.bug);
+			}
+			render(){
+				let { bug } = this.props; 
+				return(
+					<li>
+						<span className="bugname" onClick={this.onBugNameClick}>{bug.name}</span>
+						<div className="datetime">[{bug.createdAt.toString()}]</div>
+					</li>
+				)
+			}
+		}
 		class BugTracker extends React.Component{
 			newBugName = '';
 
@@ -91,18 +106,13 @@
 			onAddNewClick = () => {
 				this.props.model.addNew(this.newBugName);
 			}
-			onBugNameClick = () => {
-				console.log('The bug is being toggled');
-			}
+			
 			render(){
 				let { model } = this.props,
 					bugs = model.getAll(),
 					bugItems = bugs.map(bug => (
-						<li key={bug.id}>
-							<span className="bugname" onClick={this.onBugNameClick}>{bug.name}</span>
-							<div className="datetime">[{bug.createdAt.toString()}]</div>
-						</li>
-					))
+						<BugItem key={bug.id} bug={bug} />
+					));
 				return(
 					<div>
 						<section className="stats">
