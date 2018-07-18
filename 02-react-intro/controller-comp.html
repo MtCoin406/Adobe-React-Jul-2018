@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Greeter</title>
+	<script src="react.js"></script>
+	<script src="react-dom.js"></script>
+	<script src="babel.min.js"></script>
+	<script type="text/babel">
+		class MyComp extends React.Component{
+			render(){
+				console.log('rendering...');
+				return(
+					<input type="text" value="something" />
+				);
+			}
+		}
+
+		ReactDOM.render(<MyComp/>,
+			document.getElementById('root'));
+
+	</script>
+</head>
+<body>
+	<div id="root"></div>
+</body>
+</html>
