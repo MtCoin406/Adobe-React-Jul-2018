@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Greeter</title>
+	<script src="react.js"></script>
+	<script src="react-dom.js"></script>
+	<script src="babel.min.js"></script>
+	<script type="text/babel">
+		
+		class ProductList extends React.Component{
+			render(){
+				let products = [
+					{ id : 1, name : 'Pen'},
+					{ id : 2, name : 'Pencil'}, 
+					{ id : 3, name : 'Marker'}
+				];
+				/*
+				let productItems = [];
+				for(let index = 0, count = products.length; index < count; index++){
+					let productItem = (<li key={products[index].id}>{products[index].name}</li>);
+					productItems.push(productItem);
+				}
+				*/
+				/*
+				let productItems = products.map(function(product){
+			 		return (<li key={product.id}>{product.name}</li>)
+				});
+				*/
+				let productItems = products.map(product => (<li key={product.id}>{product.name}</li>));
+				return(
+					<div>
+						<h1>Products</h1>
+						<hr/>
+						<label>Product Name :</label>
+						<input type="text" />
+						<input type="button" value="Add" />
+						<ol>
+							{productItems}
+						</ol>
+					</div>
+				)
+			}
+		}
+
+		ReactDOM.render(<ProductList/>,
+			document.getElementById('root'));
+
+	</script>
+</head>
+<body>
+	<div id="root"></div>
+</body>
+</html>
