@@ -68,12 +68,7 @@
 			}
 			addNew(bugName){
 				let newBugId = this._list.reduce((result, bug) => result > bug.id ? result : bug.id, 0) + 1;
-				let newBug = {
-					id : newBugId,
-					name : bugName,
-					isClosed : false,
-					createdAt : new Date()
-				};
+				let newBug = new Bug(newBugId, bugName);
 				this._list.push(newBug);
 				this.triggerChange();
 			}
@@ -83,9 +78,26 @@
 			}
 		}
 
+		class Bug {
+			id = 0;
+			name = '';
+			isClosed = false;
+			createdAt = null;
+
+			constructor(id, name){
+				this.id = id;
+				this.name = name;
+				this.createdAt = new Date();
+			}
+
+			toggle(){
+				this.isClosed = !this.isClosed;
+			}
+		}
+
 		class BugItem extends React.Component{
 			onBugNameClick = () => {
-				console.log('The bug is being toggled', this.props.bug);
+				this.props.bug.toggle();
 			}
 			render(){
 				let { bug } = this.props; 
@@ -93,6 +105,7 @@
 					<li>
 						<span className="bugname" onClick={this.onBugNameClick}>{bug.name}</span>
 						<div className="datetime">[{bug.createdAt.toString()}]</div>
+						<div>[{bug.isClosed.toString()}]</div>
 					</li>
 				)
 			}
