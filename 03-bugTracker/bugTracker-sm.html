@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Bug Tracker</title>
+	<script type="text/usecases">
+		1. Add bugs
+		2. List the bugs
+		3. Toggle the 'closed' status of any bug
+		4. Remove closed bugs
+		5. Display stats (# of closed bugs / total # of bugs)
+		6. Sort the bugs
+		7. Persist the bugs in the server
+		8. Make the accessible using unique urls
+	</script>
+	<style>
+		body{
+			margin-left: 50px;
+		}
+		section{
+			margin-bottom: 10px;
+		}
+		.closed{
+			color : red;
+			text-decoration: line-through;
+			font-style: italic;
+			font-weight: bold;
+		}
+		.stats, .bugname{
+			font-size: 18pt;
+		}
+		.bugname{
+			cursor: pointer;
+		}
+		ol{
+			width: 500px;
+			list-style: none;
+			-webkit-padding-start : 0px;
+		}
+		li{
+			margin-bottom: 10px;
+			border: 1px solid gray;
+			background-color: #e7e7e7;
+			padding: 10px;
+			border-radius: 5px;
+		}
+	</style>
+	<script src="react.js"></script>
+	<script src="react-dom.js"></script>
+	<script src="babel.min.js"></script>
+	<script src="stateManager.js"></script>
+	<script type="text/babel">
+		
+
+		class BugItem extends React.Component{
+			onBugNameClick = () => {
+				let { bug, toggle} = this.props;
+				toggle(bug);
+			}
+			render(){
+				let { bug } = this.props; 
+				let bugStyle = bug.isClosed ? 'bugname closed' : 'bugname';
+				return(
+					<li>
+						<span className="bugname" className={bugStyle} onClick={this.onBugNameClick}>{bug.name}</span>
+						<div className="datetime">[{bug.createdAt.toString()}]</div>
+						<div>[{bug.isClosed.toString()}]</div>
+					</li>
+				)
+			}
+		}
+		class BugTracker extends React.Component{
+			newBugName = '';
+
+			constructor(props){
+				super(props);
+			}
+			onAddNewClick = () => {
+				this.props.addNew(this.newBugName);
+			}
+			
+			render(){
+				let { bugs, toggle } = this.props,
+					bugItems = bugs.map((bug,index) => (
+						<BugItem key={index} bug={bug} toggle={toggle}/>
+					));
+				return(
+					<div>
+						<section className="stats">
+							<span className="closed">1</span>
+							<span> / </span>
+							<span>{bugs.length}</span>
+						</section>
+						<section className="sort">
+							<label htmlFor="">Order By :</label>
+							<select>
+								<option value=""></option>
+								<option value=""></option>
+							</select>
+							<label htmlFor="">Descending ? :</label>
+							<input type="checkbox" />
+						</section>
+						<section className="edit">
+							<label htmlFor="">Bug Name :</label>
+							<input type="text" onChange={evt => this.newBugName = evt.target.value}/>
+							<input type="button" value="Add New" onClick={this.onAddNewClick} />
+						</section>
+						<section className="list">
+							<ol>
+								{bugItems}
+							</ol>
+							<input type="button" value="Remove Closed" />
+						</section>
+					</div>
+				)
+			}
+		}
+
+		function bugsReducer(currentState = [], action){
+			if (action.type === 'ADD_NEW'){
+				let newState = [...currentState, action.payload];
+				return newState;
+			}
+			if (action.type === 'UPDATE'){
+				let {oldBug, newBug} = action.payload;
+				let newState = currentState.map(bug => bug === oldBug ? newBug : bug);
+				return newState;
+			}
+			return currentState;
+		}
+
+		let bugActionCreators = {
+			addNew(bugName){
+				let newBug = {
+					name : bugName,
+					isClosed : false,
+					createdAt : new Date()
+				};
+				var addNewAction = { type : 'ADD_NEW', payload : newBug };
+				return addNewAction;
+			},
+			toggle(bugToToggle){
+				let toggledBug = {...bugToToggle, isClosed : !bugToToggle.isClosed};
+				let updateAction = { type : 'UPDATE', payload : {oldBug : bugToToggle, newBug : toggledBug}};
+				return updateAction;
+			}
+		}
+
+		let store = SM.createStore(bugsReducer);
+		let bugActions = SM.bindActionCreators(bugActionCreators, store.dispatch);
+
+		function renderApp(){
+			let bugs = store.getState()
+			ReactDOM.render(<BugTracker bugs={bugs} {...bugActions}/>,
+				document.getElementById('root'));
+		}
+		store.subscribe(renderApp);
+		renderApp();
+	</script>
+</head>
+<body>
+	<h1>Bug Tracker</h1>
+	<hr>
+	<div id="root"></div>
+</body>
+</html>
