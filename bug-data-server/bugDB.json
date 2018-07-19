@@ -1,16 +1,22 @@
 {
   "bugs": [
     {
-      "id": 1,
-      "name": "Data integrity checks failed",
-      "isClosed": true,
-      "createdAt": "2018-05-24T10:57:55.421Z"
-    },
-    {
       "id": 2,
       "name": "Server communication failure",
       "isClosed": false,
       "createdAt": "2018-05-30T10:32:18.568Z"
+    },
+    {
+      "id": 3,
+      "name": "User actions not recognized",
+      "isClosed": false,
+      "createdAt": "2018-07-19T10:49:20.368Z"
+    },
+    {
+      "id": 4,
+      "name": "Async ops are not async",
+      "isClosed": false,
+      "createdAt": "2018-07-19T10:54:58.590Z"
     }
   ],
   "projects": [

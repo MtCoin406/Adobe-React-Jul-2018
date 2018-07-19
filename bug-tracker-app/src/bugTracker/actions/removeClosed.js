@@ -1,8 +1,12 @@
+import bugServer from '../services/bugServer';
 export function removeClosed(){
-	return function(storeState){
-		let closedBugs = storeState.bugsData.filter(bug => bug.isClosed);
-		let removeAction = { type : 'REMOVE', payload : closedBugs};
-		return removeAction;
+	return function(dispatch, getState){
+		let closedBugs = getState().bugsData.filter(bug => bug.isClosed);
+		closedBugs.forEach(async function(closedBug){
+			await bugServer.remove(closedBug);
+			let removeAction = { type : 'REMOVE', payload : closedBug};
+			dispatch(removeAction);
+		});
 	}
 	
 }

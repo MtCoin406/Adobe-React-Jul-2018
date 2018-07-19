@@ -9,6 +9,9 @@ import BugSort from './views/BugSort';
 import BugList from './views/BugList';
 
 class BugTracker extends Component{
+	componentDidMount(){
+		this.props.load();
+	}
 	render(){
 		let { bugs, toggle, addNew, removeClosed, sort } = this.props;
 			
@@ -24,6 +27,6 @@ class BugTracker extends Component{
 }
 
 export default connect(
-	({spinnerData, bugsData}) => ({bugs : bugsData.filter((bug, index) => index % 2 === spinnerData % 2)}),
+	({bugsData : bugs}) => ({bugs}),
 	(dispatch) => bindActionCreators(bugActionCreators, dispatch)
 )(BugTracker);
