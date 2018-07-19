@@ -274,31 +274,59 @@
 			spinnerData : spinnerReducer
 		});
 
-		let store = Redux.createStore(rootReducer);
+		let appStore = Redux.createStore(rootReducer);
 
-		{/* Action creation logic for each component */}		
-		let bugActions = Redux.bindActionCreators(bugActionCreators, store.dispatch);
-		let spinnerActions = Redux.bindActionCreators(spinnerActionCreators, store.dispatch);
+		{/* connect logic for each component */}
+
+		let ConnectedBugTracker = (function(){
+			/*function mapStateToBugTrackerProps(storeState){
+				let bugs = storeState.bugsData;
+				return { bugs : bugs };
+			}
+			function mapDispatchToBugTrackerProps(dispatch){
+				let bugActions = Redux.bindActionCreators(bugActionCreators, dispatch);
+				return bugActions;
+			}
+
+			return ReactRedux.connect(mapStateToBugTrackerProps, mapDispatchToBugTrackerProps)(BugTracker);*/
+
+			return ReactRedux.connect(
+				({bugsData : bugs}) => ({bugs}),
+				(dispatch) => Redux.bindActionCreators(bugActionCreators, dispatch)
+			)(BugTracker);
+			
+		})();
+
+
+		let ConnectedSpinner = (function(){
+			function mapStateToSpinnerProps(storeState){
+				let spinnerValue = storeState.spinnerData;
+				return { value : spinnerValue };
+			}
+
+			function mapDispatchToSpinnerProps(dispatch){
+				let spinnerActions = Redux.bindActionCreators(spinnerActionCreators, dispatch);
+				return spinnerActions;
+			}
+			return ReactRedux.connect(mapStateToSpinnerProps, mapDispatchToSpinnerProps)(Spinner);
+		})();
+		
 
 		{/* Rendering */}
-		function renderApp(){
-			/* State extraction logic for each component */
-			let storeState = store.getState(),
-				bugs = storeState.bugsData,
-				spinnerValue = storeState.spinnerData;
-
-			/* Rendering the components*/
-			ReactDOM.render(
+		
+		/* Rendering the components*/
+		ReactDOM.render(
+			<ReactRedux.Provider store={appStore}>
 				<div>
-					<Spinner value={spinnerValue}  {...spinnerActions}/>
+					<ConnectedSpinner/>
 					<hr/>
-					<BugTracker bugs={bugs} {...bugActions}/>
+					<ConnectedBugTracker/>
 				</div>
-				,
-				document.getElementById('root'));
-		}
-		store.subscribe(renderApp);
-		renderApp();
+			</ReactRedux.Provider>
+			,
+			document.getElementById('root'));
+		
+		
 	</script>
 </head>
 <body>
