@@ -48,10 +48,10 @@
 	<script src="react.js"></script>
 	<script src="react-dom.js"></script>
 	<script src="babel.min.js"></script>
-	<script src="stateManager.js"></script>
+	<script src="redux.js"></script>
 	<script type="text/babel">
 		
-
+		{/* Components */}
 		class BugItem extends React.Component{
 			onBugNameClick = () => {
 				let { bug, toggle} = this.props;
@@ -82,16 +82,29 @@
 		};
 
 		class BugSort extends React.Component{
+
+			sortBy = '';
+			isDescending = false;
+
+			onSortChange = (evt) => {
+				this.sortBy = evt.target.value;
+				this.props.sort(this.props.bugs, this.sortBy, this.isDescending);
+			}
+			onOrderChange = (evt) => {
+				this.isDescending = evt.target.checked;
+				this.props.sort(this.props.bugs, this.sortBy, this.isDescending);
+			}
 			render(){
 				return(
 					<section className="sort">
 						<label htmlFor="">Order By :</label>
-						<select>
-							<option value=""></option>
-							<option value=""></option>
+						<select onChange={this.onSortChange}>
+							<option value="name">Name</option>
+							<option value="isClosed">Status</option>
+							<option value="createdAt">Date</option>
 						</select>
 						<label htmlFor="">Descending ? :</label>
-						<input type="checkbox" />
+						<input type="checkbox" onChange={this.onOrderChange} />
 					</section>
 				)
 			}
@@ -132,12 +145,12 @@
 				super(props);
 			}
 			render(){
-				let { bugs, toggle, addNew, removeClosed } = this.props,
+				let { bugs, toggle, addNew, removeClosed, sort } = this.props;
 					
 				return(
 					<div>
 						<BugStats bugs={bugs} />
-						<BugSort />
+						<BugSort bugs={bugs} sort={sort}/>
 						<BugEdit addNew={addNew} />
 						<BugList {...{bugs, toggle, removeClosed}} />
 					</div>
@@ -145,6 +158,28 @@
 			}
 		}
 
+		class Spinner extends React.Component{
+			deltaValue = 1;
+			onDecrementClick = () => {
+				this.props.decrement(this.deltaValue);
+			}
+			onIncrementClick = () => {
+				this.props.increment(this.deltaValue);
+			}
+			render(){
+				return (
+					<div>
+						<input type="number" onChange={evt => this.deltaValue = evt.target.valueAsNumber}/>
+						<br/>
+						<input type="button" value="Decrement" onClick={this.onDecrementClick}/>
+						<span> [{this.props.value}] </span>
+						<input type="button" value="Increment" onClick={this.onIncrementClick}/>
+					</div>
+				);
+			}
+		}
+
+		{/* Reducers */}
 		function bugsReducer(currentState = [], action){
 			if (action.type === 'ADD_NEW'){
 				let newState = [...currentState, action.payload];
@@ -160,9 +195,35 @@
 				let newState = currentState.filter(bug => closedBugs.indexOf(bug) === -1);
 				return newState;
 			}
+			if (action.type === 'REPLACE_ALL'){
+				let newState = action.payload;
+				return newState;
+			}
 			return currentState;
 		}
 
+		function spinnerReducer(currentState = 0, action){
+			if (action.type === 'INCREMENT')
+				return currentState + action.payload;
+			if (action.type === 'DECREMENT')
+				return currentState - action.payload;
+			return currentState;
+		}
+
+		{/* Action Creators */}
+		function getComparerFor(attrName){
+			return function(item1, item2){
+				if (item1[attrName] < item2[attrName]) return -1;
+				if (item1[attrName] > item2[attrName]) return 1;
+				return 0;
+			}
+		}
+
+		function getDescendingComparerFor(comparer){
+			return function(item1, item2){
+				return comparer(item1, item2) * -1;
+			}
+		}
 		let bugActionCreators = {
 			addNew(bugName){
 				let newBug = {
@@ -182,15 +243,56 @@
 				let closedBugs = bugs.filter(bug => bug.isClosed);
 				let removeAction = { type : 'REMOVE', payload : closedBugs};
 				return removeAction;
+			},
+			sort(bugs, sortBy, isDescending){
+				let comparer = getComparerFor(sortBy);
+				if (isDescending)
+					comparer = getDescendingComparerFor(comparer);
+				bugs.sort(comparer);
+				let sortedBugs = [...bugs];
+				let replaceAllAction = { type : 'REPLACE_ALL', payload : sortedBugs};
+				return replaceAllAction;
 			}
 		}
 
-		let store = SM.createStore(bugsReducer);
-		let bugActions = SM.bindActionCreators(bugActionCreators, store.dispatch);
+		var spinnerActionCreators = {
+			increment(delta){
+				let action = { type : 'INCREMENT' , payload : delta};
+				return action;
+			},
+			decrement(delta){
+				let action = { type : 'DECREMENT' , payload : delta};
+				return action;
+			}
+		}
 
+		{/* Store */}
+		let rootReducer = Redux.combineReducers({
+			bugsData : bugsReducer,
+			spinnerData : spinnerReducer
+		});
+
+		let store = Redux.createStore(rootReducer);
+
+		{/* Action creation logic for each component */}
+		let bugActions = Redux.bindActionCreators(bugActionCreators, store.dispatch);
+		let spinnerActions = Redux.bindActionCreators(spinnerActionCreators, store.dispatch);
+
+		{/* Rendering */}
 		function renderApp(){
-			let bugs = store.getState()
-			ReactDOM.render(<BugTracker bugs={bugs} {...bugActions}/>,
+			/* State extraction logic for each component */
+			let storeState = store.getState(),
+				bugs = storeState.bugsData,
+				spinnerValue = storeState.spinnerData;
+
+			/* Rendering the components*/
+			ReactDOM.render(
+				<div>
+					<Spinner value={spinnerValue}  {...spinnerActions}/>
+					<hr/>
+					<BugTracker bugs={bugs} {...bugActions}/>
+				</div>
+				,
 				document.getElementById('root'));
 		}
 		store.subscribe(renderApp);
